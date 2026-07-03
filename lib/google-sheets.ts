@@ -8,9 +8,11 @@ export function getSheetsClient() {
     privateKey = privateKey.slice(1, -1);
   }
   privateKey = privateKey.replace(/\\n/g, '\n');
-  
-  if (!clientEmail || !privateKey) {
-    throw new Error('Missing Google Service Account credentials in .env.local');
+  if (!clientEmail) {
+    throw new Error('Missing GOOGLE_SERVICE_ACCOUNT_EMAIL in Vercel Environment Variables');
+  }
+  if (!privateKey) {
+    throw new Error('Missing GOOGLE_PRIVATE_KEY in Vercel Environment Variables');
   }
 
   const auth = new google.auth.GoogleAuth({
