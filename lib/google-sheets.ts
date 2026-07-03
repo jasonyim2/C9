@@ -2,8 +2,12 @@ import { google } from 'googleapis';
 
 export function getSheetsClient() {
   const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-  // Handle newlines in the private key if provided as a single string
-  const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+  // Handle newlines and possible surrounding quotes from Vercel environment variables
+  let privateKey = process.env.GOOGLE_PRIVATE_KEY || '';
+  if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+    privateKey = privateKey.slice(1, -1);
+  }
+  privateKey = privateKey.replace(/\\n/g, '\n');
   
   if (!clientEmail || !privateKey) {
     throw new Error('Missing Google Service Account credentials in .env.local');
