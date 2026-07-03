@@ -21,9 +21,9 @@ const DATE_OPTIONS: { value: DateFilter; label: string }[] = [
 ];
 
 const COUNT_OPTIONS = [
+  { value: '3', label: '3개' },
   { value: '10', label: '10개' },
-  { value: '20', label: '20개' },
-  { value: '50', label: '50개' },
+  { value: '30', label: '30개' },
 ];
 
 function ThemeToggle() {
@@ -48,7 +48,7 @@ export default function HomePage() {
   const [collecting, setCollecting] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('all');
   const [dateFilter, setDateFilter] = useState<DateFilter>('24hours');
-  const [countFilter, setCountFilter] = useState('10');
+  const [countFilter, setCountFilter] = useState('3');
   const [selectedNews, setSelectedNews] = useState<News | null>(null);
 
   const fetchNews = useCallback(async () => {
@@ -101,34 +101,48 @@ export default function HomePage() {
   const handleCollect = async () => {
     if (collecting) return;
     setCollecting(true);
-    try {
-      const res = await fetch('/api/news', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dateFilter, countFilter })
-      });
-      const result = await res.json();
-      if (!result.success) throw new Error(result.error);
-      
-      const newItems = result.data as News[];
-      if (newItems.length > 0) {
-        const sheetRes = await fetch('/api/sheet', {
+    let attempts = 0;
+    const maxAttempts = 2;
+
+    while (attempts < maxAttempts) {
+      try {
+        // [TESTING ONLY] Temporary error injection on first attempt
+        // if (attempts === 0) throw new Error('Temporary error for testing retry logic');
+
+        const res = await fetch('/api/news', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newItems)
+          body: JSON.stringify({ dateFilter, countFilter })
         });
-        const sheetResult = await sheetRes.json();
-        if (!sheetResult.success) throw new Error(sheetResult.error);
+        const result = await res.json();
+        if (!result.success) throw new Error(result.error);
+        
+        const newItems = result.data as News[];
+        if (newItems.length > 0) {
+          const sheetRes = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newItems)
+          });
+          const sheetResult = await sheetRes.json();
+          if (!sheetResult.success) throw new Error(sheetResult.error);
+        }
+        
+        toast.success(`${newItems.length}개의 뉴스를 수집했습니다.`);
+        fetchNews();
+        break; // Success, exit loop
+      } catch (err) {
+        console.error(`Attempt ${attempts + 1} failed:`, err);
+        attempts++;
+        if (attempts >= maxAttempts) {
+          toast.error('뉴스 수집에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+        } else {
+          // Optional: Add a small delay before retry
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
       }
-      
-      toast.success(`${newItems.length}개의 뉴스를 수집했습니다.`);
-      fetchNews();
-    } catch (err) {
-      console.error(err);
-      toast.error('뉴스 수집에 실패했습니다. 잠시 후 다시 시도해 주세요.');
-    } finally {
-      setCollecting(false);
     }
+    setCollecting(false);
   };
 
   const handleToggleFavorite = async (id: string, current: boolean) => {

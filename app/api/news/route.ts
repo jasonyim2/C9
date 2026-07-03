@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -74,7 +76,7 @@ export async function POST(request: Request) {
     try {
       parsedNews = JSON.parse(text);
     } catch (e) {
-      console.error('Failed to parse Gemini response as JSON:', e, text);
+      console.error('[Gemini API Error] Failed to parse Gemini response as JSON:', e, text);
       return NextResponse.json({ success: true, data: [] });
     }
 
@@ -125,7 +127,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, data: limitedNews });
   } catch (error: any) {
-    console.error('API /api/news Error:', error);
+    console.error('[Gemini API Error] /api/news failed:', error);
     return NextResponse.json({ success: false, error: error.message || 'Unknown error' }, { status: 500 });
   }
 }

@@ -49,7 +49,7 @@ export async function GET() {
 
     return NextResponse.json({ success: true, data: news });
   } catch (error: any) {
-    console.error('Failed to fetch from Google Sheets', error);
+    console.error('[Google Sheets API Error] Failed to fetch from Google Sheets:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
@@ -120,7 +120,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, message: 'Data saved successfully' });
   } catch (error: any) {
-    console.error('Failed to save to Google Sheets', error);
+    console.error('[Google Sheets API Error] Failed to save to Google Sheets:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
@@ -159,7 +159,7 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('Failed to update Google Sheets', error);
+    console.error('[Google Sheets API Error] Failed to update Google Sheets:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
