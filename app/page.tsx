@@ -77,9 +77,9 @@ export default function HomePage() {
         const diffTime = Math.abs(now.getTime() - d.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         
-        if (dateFilter === '24hours') return diffDays <= 1;
-        if (dateFilter === '3days') return diffDays <= 3;
-        if (dateFilter === '7days') return diffDays <= 7;
+        if (dateFilter === '24hours') return diffDays <= 2; // Allow timezone differences
+        if (dateFilter === '3days') return diffDays <= 4;
+        if (dateFilter === '7days') return diffDays <= 8;
         return true;
       });
 
